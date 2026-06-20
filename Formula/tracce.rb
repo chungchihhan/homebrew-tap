@@ -2,7 +2,7 @@ class Tracce < Formula
   desc "macOS kernel-event tracer for Claude Code sessions"
   homepage "https://github.com/chungchihhan/tracce"
   url "https://github.com/chungchihhan/tracce/archive/refs/tags/v0.1.0.tar.gz"
-  sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+  sha256 "e146140c73e4b5d52da0e1fb3e7ca14f634144555596d8f5707134a941349c54"
   license "MIT"
   head "https://github.com/chungchihhan/tracce.git", branch: "main"
 
