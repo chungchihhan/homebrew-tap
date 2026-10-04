@@ -1,0 +1,38 @@
+name: Update Fetch Cask
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update version and checksum from latest Fetch release
+        run: |
+          set -euo pipefail
+          release=$(curl -fsSL --retry 3 \
+            -H 'Accept: application/vnd.github+json' \
+            https://api.github.com/repos/chungchihhan/fetch/releases/latest)
+          tag=$(jq -r '.tag_name' <<< "$release")
+          digest=$(jq -r '.assets[] | select(.name == "Fetch.zip") | .digest' <<< "$release")
+          [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]
+
+          cask=Casks/fetch-snippets.rb
+          sed -i -E "s/^  version \"[^\"]+\"$/  version \"${tag#v}\"/" "$cask"
+          sed -i -E "s/^  sha256 \"[0-9a-f]{64}\"$/  sha256 \"${digest#sha256:}\"/" "$cask"
+
+          if ! git diff --quiet -- "$cask"; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add "$cask"
+            git commit -m "Update Fetch Cask to ${tag}"
+            git push origin HEAD:main
+          fi
